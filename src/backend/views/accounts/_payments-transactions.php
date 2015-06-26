@@ -10,7 +10,7 @@ use yii\grid\GridView;
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
         'id',
-        'sum',
+        'sum:decimal',
         ['class' => 'yii\grid\ActionColumn'],
     ],
 ]); ?>
