@@ -42,7 +42,7 @@ class AccountsSearch extends Accounts
      */
     public function search($params)
     {
-        $query = Accounts::find()->andWhere(['is_system' => false]);
+        $query = Accounts::find()->andWhere(['is_system' => false])->orderBy('number');
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

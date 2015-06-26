@@ -2,25 +2,41 @@
 
 namespace backend\controllers;
 
+use common\components\SystemAccountEmptyException;
+use common\models\PaymentsTransactions;
+use common\models\PaymentsTransactionsSearch;
 use Yii;
 use common\models\Accounts;
 use common\models\AccountsSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * AccountsController implements the CRUD actions for Accounts model.
  */
 class AccountsController extends Controller
 {
+    /**
+     * @inheritdoc
+     */
     public function behaviors()
     {
         return [
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    'delete' => ['post'],
+                    'logout' => ['post'],
                 ],
             ],
         ];
@@ -48,60 +64,46 @@ class AccountsController extends Controller
      */
     public function actionView($id)
     {
+        $model = $this->findModel($id);
+        $queryParams = Yii::$app->request->queryParams;
+
+        $paymentTransactionsSearchModel = new PaymentsTransactionsSearch();
+        $queryParams['PaymentsTransactionsSearch']['to'] = $model->number;
+        $paymentTransactionsDataProvider = $paymentTransactionsSearchModel->search($queryParams);
+        $paymentTransactionsDataProvider->setPagination(['pageSize' => 10]);
+
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $model,
+            'paymentTransactionsSearchModel' => $paymentTransactionsSearchModel,
+            'paymentTransactionsDataProvider' => $paymentTransactionsDataProvider,
         ]);
     }
 
     /**
-     * Creates a new Accounts model.
+     * Creates a new PaymentsTransactions model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
-    public function actionCreate()
+    public function actionAdd($to)
     {
-        $model = new Accounts();
+        $model = new PaymentsTransactions();
+        $model->to = $to;
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->number]);
-        } else {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+        try {
+            if ($model->load(Yii::$app->request->post()) && $model->save()) {
+                Yii::$app->session->setFlash('success', 'Счет успешно пополнен');
+                return $this->redirect(['accounts/index']);
+            } else {
+                return $this->render('add', [
+                    'model' => $model,
+                ]);
+            }
+        } catch (SystemAccountEmptyException $e) {
+            Yii::$app->session->setFlash('error', 'Недостаточно средств на системном счете');
+            return $this->redirect(['accounts/index']);
         }
     }
 
-    /**
-     * Updates an existing Accounts model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param integer $id
-     * @return mixed
-     */
-    public function actionUpdate($id)
-    {
-        $model = $this->findModel($id);
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->number]);
-        } else {
-            return $this->render('update', [
-                'model' => $model,
-            ]);
-        }
-    }
-
-    /**
-     * Deletes an existing Accounts model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param integer $id
-     * @return mixed
-     */
-    public function actionDelete($id)
-    {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
-    }
 
     /**
      * Finds the Accounts model based on its primary key value.

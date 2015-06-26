@@ -12,7 +12,7 @@ class m150625_062309_add_payments_transactions_table extends Migration
             'from' => Schema::TYPE_INTEGER . ' NOT NULL',
             'to' => Schema::TYPE_INTEGER . ' NOT NULL',
             'sum' => Schema::TYPE_MONEY,
-            'date_entered' => Schema::TYPE_TIMESTAMP,
+            'date_entered' => Schema::TYPE_INTEGER,
 
         ]);
 

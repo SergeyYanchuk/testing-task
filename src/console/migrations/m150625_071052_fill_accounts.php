@@ -5,12 +5,11 @@ use yii\db\Migration;
 
 class m150625_071052_fill_accounts extends Migration
 {
-    const ACCOUNTS_COUNT = 50000;
     public function up()
     {
         $this->_createSystemAccount();
 
-        for ($i = 0; $i < self::ACCOUNTS_COUNT; $i++) {
+        for ($i = 0; $i < Yii::$app->params['accountsCount']; $i++) {
             $this->insert('{{%accounts}}', ['balance' => 0]);
         }
 

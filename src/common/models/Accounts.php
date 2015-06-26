@@ -41,8 +41,8 @@ class Accounts extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'number' => 'Number',
-            'balance' => 'Balance',
+            'number' => 'Номер счета',
+            'balance' => 'Баланс',
             'is_system' => 'Is System',
         ];
     }
@@ -50,7 +50,7 @@ class Accounts extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getPaymentsTransactions()
+    public function getPaymentsTransactionsFrom()
     {
         return $this->hasMany(PaymentsTransactions::className(), ['from' => 'number']);
     }
@@ -58,8 +58,13 @@ class Accounts extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getPaymentsTransactions0()
+    public function getPaymentsTransactionsTo()
     {
         return $this->hasMany(PaymentsTransactions::className(), ['to' => 'number']);
+    }
+
+    public function beforeSave($insert) {
+
+        return parent::beforeSave($insert);
     }
 }
